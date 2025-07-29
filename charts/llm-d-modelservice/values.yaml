@@ -173,7 +173,7 @@ decode:
     env: []
     # list of ports exposed by the container
     # ports:
-    #   - containerPort: 8200  # matches routing.proxy.targetPort
+    #   - containerPort: 8200  # matches routing.proxy.targetPort, required for scraping metrics
     #     protocol: TCP
     resources: {}
     # when set, a volumeMount (and volume) is created for model storage
@@ -213,7 +213,7 @@ decode:
       # enabled -- Create PodMonitor resource for decode deployment
       enabled: false
       # port -- Port name or number to scrape metrics from (defaults to vllmPort: decode=8200, prefill=8000)
-      # port: 8200
+      # port: "metrics"
       # path -- HTTP path to scrape metrics from
       path: "/metrics"
       # interval -- Interval at which metrics should be scraped
@@ -247,7 +247,7 @@ prefill:
     mountModelVolume: true
     # list of ports exposed by the container
     # ports:
-    #   - containerPort: 8000  # matches routing.servicePort
+    #   - containerPort: 8000  # matches routing.servicePort, required for scraping metrics
     #     protocol: TCP
     resources: {}
     volumeMounts:
@@ -286,7 +286,7 @@ prefill:
       # enabled -- Create PodMonitor resource for prefill deployment
       enabled: false
       # port -- Port name or number to scrape metrics from (defaults to vllmPort: decode=8200, prefill=8000)
-      # port: 8000
+      # port: "metrics"
       # path -- HTTP path to scrape metrics from
       path: "/metrics"
       # interval -- Interval at which metrics should be scraped

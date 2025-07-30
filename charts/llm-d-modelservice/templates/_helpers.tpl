@@ -93,36 +93,38 @@ affinity:
 
 {{/* Create the init container for the routing proxy/sidecar for decode pods */}}
 {{- define "llm-d-modelservice.routingProxy" -}}
+{{- $routing := .routing }}
+{{- $values := .Values }}
 initContainers:
   - name: routing-proxy
     args:
-      - --port={{ default 8080 .servicePort }}
-      - --vllm-port={{ default 8200 .proxy.targetPort }}
-      - --connector={{ .proxy.connector | default "nixlv2" }}
-      - -v={{ default 5 .proxy.debugLevel }}
-      {{- if hasKey .proxy "secure" }}
-      - --secure-proxy={{ .proxy.secure }}
+      - --port={{ default 8080 $routing.servicePort }}
+      - --vllm-port={{ default 8200 $routing.proxy.targetPort }}
+      - --connector={{ $routing.proxy.connector | default "nixlv2" }}
+      - -v={{ default 5 $routing.proxy.debugLevel }}
+      {{- if hasKey $routing.proxy "secure" }}
+      - --secure-proxy={{ $routing.proxy.secure }}
       {{- end }}
-      {{- if hasKey .proxy "prefillerUseTLS" }}
-      - --prefiller-use-tls={{ .proxy.prefillerUseTLS }}
+      {{- if hasKey $routing.proxy "prefillerUseTLS" }}
+      - --prefiller-use-tls={{ $routing.proxy.prefillerUseTLS }}
       {{- end }}
-      {{- if hasKey .proxy "certPath" }}
-      - --cert-path={{ .proxy.certPath }}
+      {{- if hasKey $routing.proxy "certPath" }}
+      - --cert-path={{ $routing.proxy.certPath }}
       {{- end }}
-    image: {{ required "routing.proxy.image must be specified" .proxy.image }}
+    image: {{ required "routing.proxy.image must be specified" $routing.proxy.image }}
     imagePullPolicy: Always
     env:
-    {{- if .Values.tracing.enabled }}
-    {{- if .Values.tracing.components.routingProxy }}
+    {{- if $values.tracing.enabled }}
+    {{- if $values.tracing.components.routingProxy }}
     - name: OTEL_TRACING_ENABLED
       value: "true"
     - name: OTEL_EXPORTER_OTLP_ENDPOINT
-      value: {{ .Values.tracing.otelCollectorEndpoint | quote }}
+      value: {{ $values.tracing.otelCollectorEndpoint | quote }}
     - name: OTEL_SAMPLING_RATE
-      value: {{ .Values.tracing.samplingRate | quote }}
-    {{- if .Values.tracing.apiToken }}
+      value: {{ $values.tracing.samplingRate | quote }}
+    {{- if $values.tracing.apiToken }}
     - name: OTEL_EXPORTER_OTLP_HEADERS
-      value: "authorization=Bearer {{ .Values.tracing.apiToken }}"
+      value: "authorization=Bearer {{ $values.tracing.apiToken }}"
     {{- end }}
     {{- else }}
     - name: OTEL_TRACING_ENABLED
@@ -132,11 +134,11 @@ initContainers:
     - name: OTEL_TRACING_ENABLED
       value: "false"
     {{- end }}
-    {{- with .proxy.env }}
+    {{- with $routing.proxy.env }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
     ports:
-      - containerPort: {{ default 8080 .servicePort }}
+      - containerPort: {{ default 8080 $routing.servicePort }}
     resources: {}
     restartPolicy: Always
     securityContext:

@@ -111,6 +111,30 @@ initContainers:
       {{- end }}
     image: {{ required "routing.proxy.image must be specified" .proxy.image }}
     imagePullPolicy: Always
+    env:
+    {{- if .Values.tracing.enabled }}
+    {{- if .Values.tracing.components.routingProxy }}
+    - name: OTEL_TRACING_ENABLED
+      value: "true"
+    - name: OTEL_EXPORTER_OTLP_ENDPOINT
+      value: {{ .Values.tracing.otelCollectorEndpoint | quote }}
+    - name: OTEL_SAMPLING_RATE
+      value: {{ .Values.tracing.samplingRate | quote }}
+    {{- if .Values.tracing.apiToken }}
+    - name: OTEL_EXPORTER_OTLP_HEADERS
+      value: "authorization=Bearer {{ .Values.tracing.apiToken }}"
+    {{- end }}
+    {{- else }}
+    - name: OTEL_TRACING_ENABLED
+      value: "false"
+    {{- end }}
+    {{- else }}
+    - name: OTEL_TRACING_ENABLED
+      value: "false"
+    {{- end }}
+    {{- with .proxy.env }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
     ports:
       - containerPort: {{ default 8080 .servicePort }}
     resources: {}

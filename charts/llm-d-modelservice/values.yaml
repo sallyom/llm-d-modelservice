@@ -3,6 +3,26 @@
 # schedulerName -- Name of the scheduler to use for scheduling model pods
 # schedulerName: default-scheduler
 
+# OpenTelemetry distributed tracing configuration
+# @default -- See below
+tracing:
+  # -- Enable or disable distributed tracing across all components
+  enabled: false
+  # -- OpenTelemetry collector endpoint for exporting traces
+  otelCollectorEndpoint: "http://otel-collector:4317"
+  # -- Optional API token for trace export authentication
+  apiToken: ""
+  # -- Sampling rate for traces (0.0 to 1.0)
+  samplingRate: 0.1
+  # -- Component-specific tracing configuration
+  components:
+    # -- Enable tracing for EPP (includes KV cache manager and inference gateway components)
+    eppInferenceScheduler: true
+    # -- Enable tracing for routing proxy sidecar
+    routingProxy: true
+    # -- Enable tracing for vLLM instances (when supported)
+    vllm: true
+
 modelArtifacts:
   # name is the value of the model parameter in OpenAI requests
   # Required
@@ -51,6 +71,10 @@ routing:
 
     # Overwrite the verbosity of logging in the sidecar (defaults to 5)
     # debugLevel: 5
+ 
+    # -- Additional environment variables for routing proxy sidecar
+    # Tracing environment variables are automatically injected when tracing.enabled: true
+    env: []
 
 
   # Reference to parent gateway
@@ -148,6 +172,7 @@ routing:
       # Include any Environment variables to epp here, or configure scorers for a legacy epp image, ex:
     # - name: ENABLE_KVCACHE_AWARE_SCORER
     #   value: "false"
+    # Tracing environment variables are automatically injected when tracing.enabled: true
 
 
 # Decode pod configuration

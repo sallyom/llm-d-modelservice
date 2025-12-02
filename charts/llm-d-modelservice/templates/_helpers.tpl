@@ -125,6 +125,10 @@ affinity:
     {{- end }}
   image: {{ required "routing.proxy.image must be specified" .proxy.image }}
   imagePullPolicy: {{ default "Always" .proxy.imagePullPolicy }}
+  {{- with .proxy.env }}
+  env:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   ports:
     - containerPort: {{ default 8000 .servicePort }}
   resources: {}

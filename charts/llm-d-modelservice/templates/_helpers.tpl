@@ -131,6 +131,9 @@ affinity:
   {{- end }}
   ports:
     - containerPort: {{ default 8000 .servicePort }}
+      name: proxy
+    - containerPort: 9090
+      name: sidecar-metrics
   resources: {}
   restartPolicy: Always
   securityContext:

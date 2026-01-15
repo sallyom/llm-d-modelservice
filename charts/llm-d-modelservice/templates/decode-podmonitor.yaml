@@ -19,7 +19,7 @@ spec:
     matchLabels:
       {{- include "llm-d-modelservice.decodelabels" . | nindent 6 }}
   podMetricsEndpoints:
-  # For decode service, this is port 8200. Must use port name.
+  # vLLM metrics on port 8200
   - port: {{ .Values.decode.monitoring.podmonitor.portName | default "metrics" | quote }}
     path: {{ .Values.decode.monitoring.podmonitor.path | default "/metrics" }}
     interval: {{ .Values.decode.monitoring.podmonitor.interval | default "30s" }}
@@ -33,6 +33,13 @@ spec:
     {{- with .Values.decode.monitoring.podmonitor.metricRelabelings }}
     metricRelabelings:
       {{- toYaml . | nindent 6 }}
+    {{- end }}
+  # Sidecar P/D coordinator metrics on port 9090
+  - port: "sidecar-metrics"
+    path: "/metrics"
+    interval: {{ .Values.decode.monitoring.podmonitor.interval | default "30s" }}
+    {{- with .Values.decode.monitoring.podmonitor.scrapeTimeout }}
+    scrapeTimeout: {{ . }}
     {{- end }}
   {{- with .Values.decode.monitoring.podmonitor.namespaceSelector }}
   namespaceSelector:
